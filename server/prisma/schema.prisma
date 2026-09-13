@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  EMPLOYEE
+  MANAGER
+  HR
+}
+
+enum EnrollmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum FeedbackType {
+  PRAISE
+  CONSTRUCTIVE
+  CHECKIN
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(EMPLOYEE)
+  title        String?
+  managerId    String?
+  manager      User?    @relation("ManagerReports", fields: [managerId], references: [id])
+  reports      User[]   @relation("ManagerReports")
+  createdAt    DateTime @default(now())
+
+  enrollments      Enrollment[]
+  feedbackSent     Feedback[]   @relation("FeedbackFrom")
+  feedbackReceived Feedback[]   @relation("FeedbackTo")
+}
+
+model Skill {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  tracks TrackSkill[]
+}
+
+model LearningTrack {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String
+  level       String
+  createdAt   DateTime @default(now())
+
+  modules     TrackModule[]
+  skills      TrackSkill[]
+  enrollments Enrollment[]
+}
+
+model TrackSkill {
+  trackId String
+  skillId String
+  track   LearningTrack @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  skill   Skill         @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([trackId, skillId])
+}
+
+model TrackModule {
+  id              String   @id @default(cuid())
+  trackId         String
+  title           String
+  order           Int
+  durationMinutes Int
+  resourceUrl     String?
+  track           LearningTrack @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  progress ModuleProgress[]
+}
+
+model Enrollment {
+  id              String           @id @default(cuid())
+  userId          String
+  trackId         String
+  status          EnrollmentStatus @default(NOT_STARTED)
+  progressPercent Int              @default(0)
+  startedAt       DateTime         @default(now())
+  completedAt     DateTime?
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track    LearningTrack    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  progress ModuleProgress[]
+
+  @@unique([userId, trackId])
+}
+
+model ModuleProgress {
+  id           String   @id @default(cuid())
+  enrollmentId String
+  moduleId     String
+  completed    Boolean  @default(false)
+  completedAt  DateTime?
+
+  enrollment Enrollment  @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  module     TrackModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, moduleId])
+}
+
+model Feedback {
+  id            String       @id @default(cuid())
+  fromUserId    String
+  toUserId      String
+  type          FeedbackType
+  message       String
+  actionItems   String?
+  createdAt     DateTime     @default(now())
+
+  fromUser User @relation("FeedbackFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("FeedbackTo", fields: [toUserId], references: [id], onDelete: Cascade)
+}
