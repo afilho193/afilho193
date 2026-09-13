@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { FeedbackType, Role } from "@prisma/client";
+import { FeedbackType, Role } from "../lib/enums";
 import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/auth";
 
