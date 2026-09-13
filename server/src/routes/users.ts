@@ -1,7 +1,7 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { Role } from "@prisma/client";
+import { Role } from "../lib/enums";
 import { prisma } from "../lib/prisma";
 import { requireAuth, requireRole } from "../middleware/auth";
 
@@ -11,7 +11,7 @@ function publicUser(u: {
   id: string;
   name: string;
   email: string;
-  role: Role;
+  role: string;
   title: string | null;
   managerId: string | null;
 }) {

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { EnrollmentStatus, Role } from "@prisma/client";
+import { EnrollmentStatus, Role } from "../lib/enums";
 import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/auth";
 

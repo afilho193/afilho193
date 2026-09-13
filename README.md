@@ -73,4 +73,10 @@ A tela de login tem atalhos para preencher o email desses usuários automaticame
 
 ## Observação sobre este ambiente de desenvolvimento
 
-Este projeto foi desenvolvido em um ambiente sandbox sem acesso ao registro do npm (`registry.npmjs.org` bloqueado por política de rede), então **não foi possível rodar `npm install` nem testar a aplicação em execução aqui**. O código foi revisado manualmente linha a linha para consistência de tipos, rotas e contratos entre frontend e backend. Rode `npm install && npm run dev` localmente para validar antes de usar em produção.
+A aplicação já foi instalada, migrada, populada com dados de exemplo e testada de ponta a ponta (login, catálogo, inscrição em trilha, conclusão de módulos, envio/recebimento de feedback, painel de equipe/RH e administração), com backend e frontend rodando lado a lado. Principais correções feitas nesta rodada:
+
+- SQLite (via Prisma) não suporta `enum` nativo: os campos `role`, `status` e `type` do schema passaram a ser `String`, com os valores válidos centralizados em `server/src/lib/enums.ts` (mantendo a mesma ergonomia de uso, ex. `Role.HR`).
+- Faltava `client/src/vite-env.d.ts`, o que quebrava o build do frontend (`ImportMeta.env` não tipado).
+- Ajuste de tipagem no seed (`prisma/seed.ts`) e nas rotas de usuários para refletir o novo tipo `String` vindo do Prisma.
+
+Rode `npm install && npm run dev` localmente para reproduzir.

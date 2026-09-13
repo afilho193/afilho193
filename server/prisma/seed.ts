@@ -1,5 +1,6 @@
-import { PrismaClient, Role, FeedbackType, EnrollmentStatus } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { Role, FeedbackType, EnrollmentStatus } from "../src/lib/enums";
 
 const prisma = new PrismaClient();
 
@@ -137,7 +138,8 @@ async function main() {
     },
   ];
 
-  const tracks = [];
+  type TrackWithModules = Prisma.LearningTrackGetPayload<{ include: { modules: true } }>;
+  const tracks: TrackWithModules[] = [];
   for (const t of tracksData) {
     const { skills, modules, ...rest } = t;
     const track = await prisma.learningTrack.create({

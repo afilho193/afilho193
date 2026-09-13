@@ -7,30 +7,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  EMPLOYEE
-  MANAGER
-  HR
-}
-
-enum EnrollmentStatus {
-  NOT_STARTED
-  IN_PROGRESS
-  COMPLETED
-}
-
-enum FeedbackType {
-  PRAISE
-  CONSTRUCTIVE
-  CHECKIN
-}
+// SQLite não suporta enums nativos do Prisma; os campos abaixo usam String
+// e os valores válidos são mantidos em server/src/lib/enums.ts.
 
 model User {
   id           String   @id @default(cuid())
   name         String
   email        String   @unique
   passwordHash String
-  role         Role     @default(EMPLOYEE)
+  role         String   @default("EMPLOYEE")
   title        String?
   managerId    String?
   manager      User?    @relation("ManagerReports", fields: [managerId], references: [id])
@@ -86,7 +71,7 @@ model Enrollment {
   id              String           @id @default(cuid())
   userId          String
   trackId         String
-  status          EnrollmentStatus @default(NOT_STARTED)
+  status          String           @default("NOT_STARTED")
   progressPercent Int              @default(0)
   startedAt       DateTime         @default(now())
   completedAt     DateTime?
@@ -115,7 +100,7 @@ model Feedback {
   id            String       @id @default(cuid())
   fromUserId    String
   toUserId      String
-  type          FeedbackType
+  type          String
   message       String
   actionItems   String?
   createdAt     DateTime     @default(now())
