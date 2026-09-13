@@ -47,6 +47,11 @@ npm run dev
 
 Acesse `http://localhost:5173`.
 
+### Deploy (link público)
+
+Veja [DEPLOY.md](./DEPLOY.md) para o passo a passo de deploy gratuito
+(Render para o backend + Vercel para o frontend).
+
 ### Usuários de demonstração
 
 Senha para todos: `senha123`
