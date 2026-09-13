@@ -73,4 +73,4 @@ A tela de login tem atalhos para preencher o email desses usuários automaticame
 
 ## Observação sobre este ambiente de desenvolvimento
 
-Este projeto foi desenvolvido em um ambiente sandbox sem acesso ao registro do npm (`registry.npmjs.org` bloqueado por política de rede), então **não foi possível rodar `npm install` nem testar a aplicação em execução aqui**. O código foi revisado manualmente linha a linha para consistência de tipos, rotas e contratos entre frontend e backend. Rode `npm install && npm run dev` localmente para validar antes de usar em produção.
+A aplicação já foi instalada, migrada, populada com dados de exemplo e testada de ponta a ponta (API e navegador), cobrindo login, catálogo, matrícula, progresso de módulos, feedback, dashboards de gestor/RH e permissões por papel. O schema do Prisma usa campos `String` (em vez de `enum`) porque o conector SQLite não suporta enum nativo; os valores válidos ficam centralizados em `server/src/lib/enums.ts`.
