@@ -13,19 +13,21 @@ Aplicação web para trilhas de aprendizagem e feedback contínuo, com três pap
 
 ## Stack
 
-- **Backend**: Node.js + Express + TypeScript, Prisma ORM sobre SQLite, autenticação via JWT.
+- **Backend**: Node.js + Express + TypeScript, Prisma ORM sobre PostgreSQL, autenticação via JWT. Em produção roda como Serverless Function (`api/index.ts`).
 - **Frontend**: React + Vite + TypeScript, React Router, Tailwind CSS.
 
 ## Estrutura
 
 ```
-server/   API REST (Express + Prisma)
-client/   SPA React (Vite)
+server/       API REST (Express + Prisma) — código-fonte do backend
+api/index.ts  Serverless Function da Vercel que expõe server/src/app.ts em produção
+client/       SPA React (Vite)
+vercel.json   Config de build/roteamento para deploy 100% na Vercel
 ```
 
 ## Como rodar localmente
 
-Pré-requisito: Node.js 18+.
+Pré-requisitos: Node.js 18+ e um PostgreSQL rodando localmente (ou uma connection string de um Postgres gratuito, ex. Neon/Vercel Storage).
 
 ```bash
 # 1. Instalar dependências (na raiz, usa npm workspaces)
@@ -33,9 +35,9 @@ npm install
 
 # 2. Configurar variáveis de ambiente do backend
 cp server/.env.example server/.env
-# server/.env já vem com valores padrão prontos para uso local
+# edite server/.env e ajuste DATABASE_URL para o seu Postgres local
 
-# 3. Criar o banco (SQLite) e rodar as migrations
+# 3. Criar as tabelas (roda as migrations do Prisma)
 npm run db:migrate
 
 # 4. Popular o banco com dados de exemplo (usuários, trilhas, feedbacks)
@@ -49,8 +51,9 @@ Acesse `http://localhost:5173`.
 
 ### Deploy (link público)
 
-Veja [DEPLOY.md](./DEPLOY.md) para o passo a passo de deploy gratuito
-(Render para o backend + Vercel para o frontend).
+Veja [DEPLOY.md](./DEPLOY.md) para o passo a passo de deploy gratuito,
+tudo em um único projeto Vercel (frontend estático + backend como
+Serverless Function + Postgres).
 
 ### Usuários de demonstração
 
@@ -78,10 +81,25 @@ A tela de login tem atalhos para preencher o email desses usuários automaticame
 
 ## Observação sobre este ambiente de desenvolvimento
 
-A aplicação já foi instalada, migrada, populada com dados de exemplo e testada de ponta a ponta (login, catálogo, inscrição em trilha, conclusão de módulos, envio/recebimento de feedback, painel de equipe/RH e administração), com backend e frontend rodando lado a lado. Principais correções feitas nesta rodada:
+A aplicação já foi instalada, migrada, populada com dados de exemplo e
+testada de ponta a ponta (login, catálogo, inscrição em trilha, conclusão de
+módulos, envio/recebimento de feedback, painel de equipe/RH e
+administração), tanto no formato tradicional (Express com `app.listen`)
+quanto simulando fielmente o ambiente serverless da Vercel (função
+`api/index.ts` + rewrites de `vercel.json`, com Postgres real). Principais
+mudanças desta rodada:
 
-- SQLite (via Prisma) não suporta `enum` nativo: os campos `role`, `status` e `type` do schema passaram a ser `String`, com os valores válidos centralizados em `server/src/lib/enums.ts` (mantendo a mesma ergonomia de uso, ex. `Role.HR`).
-- Faltava `client/src/vite-env.d.ts`, o que quebrava o build do frontend (`ImportMeta.env` não tipado).
-- Ajuste de tipagem no seed (`prisma/seed.ts`) e nas rotas de usuários para refletir o novo tipo `String` vindo do Prisma.
+- Banco trocado de SQLite para PostgreSQL — necessário porque Vercel roda o
+  backend como função serverless, sem disco persistente entre requisições
+  (SQLite precisa de um arquivo em disco).
+- Backend reestruturado: `server/src/app.ts` concentra a configuração do
+  Express (sem `listen`); `server/src/index.ts` só é usado para rodar local
+  (`npm run dev`); `api/index.ts`, na raiz, expõe esse mesmo app como
+  Serverless Function.
+- `server/src/lib/prisma.ts` ajustado para reusar a conexão do Prisma entre
+  invocações da função (evita esgotar o limite de conexões do Postgres).
+- `vercel.json` na raiz: builda o client, aplica `prisma migrate deploy` no
+  banco, e roteia `/api/*` para a função e o restante para o SPA.
 
-Rode `npm install && npm run dev` localmente para reproduzir.
+Rode `npm install && npm run dev` localmente (com um Postgres configurado em
+`server/.env`) para reproduzir.

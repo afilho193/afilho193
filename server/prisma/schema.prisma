@@ -1,14 +1,16 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// SQLite não suporta enums nativos do Prisma; os campos abaixo usam String
-// e os valores válidos são mantidos em server/src/lib/enums.ts.
+// Os campos role/status/type abaixo usam String (em vez de enum nativo do
+// Postgres) para não depender de ALTER TYPE em cada novo valor; os valores
+// válidos são mantidos em server/src/lib/enums.ts.
 
 model User {
   id           String   @id @default(cuid())
